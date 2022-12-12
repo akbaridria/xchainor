@@ -1,7 +1,7 @@
 <template>
   <div class="fixed top-0 left-0 right-0 z-50 h-full" @click="$emit('closeModal')">
     <div class="backdrop-blur-sm bg-white/30 flex items-center justify-center h-full">
-        <div class="shadow-2xl shadow-white bg-slate-800 rounded-lg min-w-[340px] grid gap-3" @click.stop="">
+        <div class="bg-slate-800 rounded-lg min-w-[340px] grid gap-3" @click.stop="">
           <div class="text-center pt-5 text-white/50">
             Select Token
           </div>

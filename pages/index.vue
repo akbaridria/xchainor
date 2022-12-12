@@ -12,7 +12,7 @@
             <ion-icon name="chevron-down"></ion-icon>
           </button>
           <div class="p-2 border-slate-400 flex justify-between">
-            <input type="number" pattern="[0-9]+([,\.][0-9]+)?" class="bg-slate-800 text-gray-900 text-lg rounded-lg text-white focus:outline-0" placeholder="0.0">
+            <input type="number" pattern="[0-9]+([,\.][0-9]+)?" class="bg-slate-800 text-lg rounded-lg text-white focus:outline-0" placeholder="0.0">
             <div class="flex items-center bg-slate-600 p-2 rounded-full gap-x-1 text-sm cursor-pointer hover:outline outline-offset-1 outline-1 outline-blue-600 transition-all">
               <img width="18px" src="https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7/logo.png" alt="">
               <div>
@@ -32,7 +32,7 @@
             <ion-icon name="chevron-down"></ion-icon>
           </div>
           <div class="p-2 border-slate-400 flex justify-between">
-            <input type="number" pattern="[0-9]+([,\.][0-9]+)?" class="bg-slate-800 text-gray-900 text-lg rounded-lg text-white focus:outline-0" placeholder="0.0">
+            <input type="number" pattern="[0-9]+([,\.][0-9]+)?" class="bg-slate-800 text-lg rounded-lg text-white focus:outline-0" placeholder="0.0">
             <button class="group flex items-center bg-slate-600 p-2 rounded-full gap-x-1 text-sm cursor-pointer hover:outline outline-offset-1 outline-1 outline-blue-600 transition-all">
               <img width="18px" src="https://raw.githubusercontent.com/traderjoe-xyz/joe-tokenlists/main/logos/0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7/logo.png" alt="">
               <div>

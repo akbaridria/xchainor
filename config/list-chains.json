@@ -1,0 +1,41 @@
+[
+    {
+      "name": "Binance",
+      "chainId": 56,
+      "gateway": "0x304acf330bbE08d1e512eefaa92F6a57871fD895",
+      "gasReceiver": "0x2d5d7d31F671F86C782533cc367F14109a082712",
+      "tokens": {
+        "uusdc": "axlUSDC"
+      },
+      "rpc": "https://bsc-dataseed1.defibit.io/",
+      "tokenName": "BNB",
+      "tokenSymbol": "BNB",
+      "weth": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+      "usdc": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+      "router": "0x10ED43C718714eb63d5aA57B78B54704E256024E",
+      "curvePools": "0x6731D8ce7C52FEc9136cf3b7d122C032C46fF58f",
+      "explorer": "https://bscscan.com/tx/",
+      "messageSender": "0x6519BC2d3730D45e482385ae3d3802E3345Bb31f",
+      "messageReceiver": "0xdF8A57a7D33879A3C293E836aCF232B77bFD3cf2"
+    },
+    {
+        
+        "name": "Polygon",
+        "chainId": 137,
+        "gateway": "0x6f015F16De9fC8791b234eF68D486d2bF203FBA8",
+        "gasReceiver": "0x2d5d7d31F671F86C782533cc367F14109a082712",
+        "tokens": {
+            "uusdc": "axlUSDC"
+          },
+        "rpc": "https://matic-mainnet.chainstacklabs.com",
+        "tokenName": "Matic",
+        "tokenSymbol": "MATIC",
+        "weth": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+        "usdc": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+        "router": "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
+        "curvePools": "0xfBA3b7Bb043415035220b1c44FB4756434639392",
+        "explorer": "https://polygonscan.com/tx/",
+        "messageSender": "0x6519BC2d3730D45e482385ae3d3802E3345Bb31f",
+        "messageReceiver": "0xdF8A57a7D33879A3C293E836aCF232B77bFD3cf2"
+      }
+  ]
