@@ -8,18 +8,24 @@
         <div class="relative bg-slate-800 rounded-xl p-2 grid gap-y-2">
           <button class="group text-sm flex items-center gap-x-2" @click="getListModal('fromChain')">
             <div class="text-white/50">From</div> 
-            <div class="flex gap-x-2 text-base items-center">{{ fromChain.name }} <img :src="fromChain.image" alt="avalanche" width="18" /></div>
+            <div class="flex gap-x-2 text-base items-center">{{ fromChain.name }} <img :src="fromChain.logoURI" alt="avalanche" width="18" /></div>
             <ion-icon name="chevron-down"></ion-icon>
           </button>
-          <div class="p-2 border-slate-400 flex justify-between">
-            <input type="number" pattern="[0-9]+([,\.][0-9]+)?" class="bg-slate-800 text-lg rounded-lg text-white focus:outline-0" placeholder="0.0">
-            <div @click="getListModal('fromToken')" class="flex items-center bg-slate-600 p-2 rounded-full gap-x-1 text-sm cursor-pointer hover:outline outline-offset-1 outline-1 outline-blue-600 transition-all">
-              <img class="rounded-full" width="18px" :src="fromToken.image" alt="">
-              <div>
-                {{ fromToken.symbol}}
+          <div class="p-2 border-slate-400 grid gap-y-1">
+            <div class="flex items-center justify-between">
+              <input v-model="amount" type="number" pattern="[0-9]+([,\.][0-9]+)?" class="bg-slate-800 text-lg rounded-lg text-white focus:outline-0" placeholder="0.0">
+              <div @click="getListModal('fromToken')" class="flex items-center bg-slate-600 p-2 rounded-full gap-x-1 text-sm cursor-pointer hover:outline outline-offset-1 outline-1 outline-blue-600 transition-all">
+                <img class="rounded-full" width="18px" :src="fromToken.logoURI" alt="">
+                <div>
+                  {{ fromToken.symbol}}
+                </div>
+                <ion-icon name="chevron-down"></ion-icon>
               </div>
-              <ion-icon name="chevron-down"></ion-icon>
             </div>
+            <div class="text-white/50 text-sm">
+              Balance : {{ formatBalance(balance, fromToken.decimals) }} 
+            </div>
+            
           </div>
         </div>
         <div class="mx-auto">
@@ -28,25 +34,30 @@
         <div class="bg-slate-800 rounded-xl p-2 grid gap-y-2">
           <button class="group text-sm flex items-center gap-x-2" @click="getListModal('toChain')">
             <div class="text-white/50">To</div> 
-            <div class="flex gap-x-2 text-base items-center">{{ toChain.name }} <img :src="toChain.image" alt="avalanche" width="18" /></div>
+            <div class="flex gap-x-2 text-base items-center">{{ toChain.name }} <img :src="toChain.logoURI" alt="avalanche" width="18" /></div>
             <ion-icon name="chevron-down"></ion-icon>
           </button>
-          <div class="p-2 border-slate-400 flex justify-between">
-            <input type="number" pattern="[0-9]+([,\.][0-9]+)?" class="bg-slate-800 text-lg rounded-lg text-white focus:outline-0" placeholder="0.0">
-            <button @click="getListModal('toToken')" class="group flex items-center bg-slate-600 p-2 rounded-full gap-x-1 text-sm cursor-pointer hover:outline outline-offset-1 outline-1 outline-blue-600 transition-all">
-              <img class="rounded-full" width="18px" :src="toToken.image" alt="">
-              <div>
-                {{ toToken.symbol}}
-              </div>
-              <ion-icon name="chevron-down"></ion-icon>
-            </button>
+          <div class="p-2 border-slate-400 grid gap-y-2">
+            <div class="flex items-center justify-between">
+              <input disabled v-model="amountOut" type="number" pattern="[0-9]+([,\.][0-9]+)?" class="bg-slate-800 text-lg rounded-lg text-white focus:outline-0" placeholder="0.0">
+              <button @click="getListModal('toToken')" class="group flex items-center bg-slate-600 p-2 rounded-full gap-x-1 text-sm cursor-pointer hover:outline outline-offset-1 outline-1 outline-blue-600 transition-all">
+                <img class="rounded-full" width="18px" :src="toToken.logoURI" alt="">
+                <div>
+                  {{ toToken.symbol}}
+                </div>
+                <ion-icon name="chevron-down"></ion-icon>
+              </button>
+            </div>
+            <div class="text-white/50 text-sm">
+              <div>Minimum Received <ion-icon name="alert-circle-outline" /></div>
+            </div>
           </div>
         </div>
       </div>
       
       <div>
-        <button @click="connectWallet()" class="px-3 w-full py-2 text-sm bg-blue-600 rounded-full font-semibold hover:bg-blue-600/50 transition-colors">
-          Connect Wallet
+        <button @click="connectWallet()" :class="wrongNetwork ? 'px-3 w-full py-2 text-sm bg-red-600 rounded-full font-semibold hover:bg-red-600/50 transition-colors' : 'px-3 w-full py-2 text-sm bg-blue-600 rounded-full font-semibold hover:bg-blue-600/50 transition-colors'">
+          {{ isConnect ? wrongNetwork ? 'Wrong Network' : isApprove ? 'Bridge' : 'Approve' : 'Connect Wallet' }}
         </button>
       </div>
 
@@ -63,12 +74,14 @@
     </div>
 
     <Modal v-if="openModal" :listModal="listModal" :identifier="identifierModal" @closeModal="selectList($event)" />
+    <!-- <ModalError /> -->
+    <Loader />
   </div>
 </template>
 
 <script>
-import { getBalance, getChain, sendTx, checkApprove, approveToken } from "../utils";
-const { ethers, BigNumber } = require("ethers");
+import { getBalance, getChain, sendTx, checkApprove, approveToken, getNativeBalance, getQuote } from "../utils";
+const { ethers, BigNumber, utils } = require("ethers");
 const listChains  = require('../config/list-chains.json');
 
 export default {
@@ -80,36 +93,28 @@ export default {
       'Binance' : bscTokens.tokens,
       'Polygon' : polygonTokens.tokens
     }
+    const fromChain = listChains.find((elem) => elem.name === 'Binance')
+    const toChain = listChains.find((elem) => elem.name === 'Polygon')
+    const fromToken  = listTokens[fromChain.name][0]
+    const toToken = listTokens[toChain.name][0]
     return {
       openModal: false,
       listChains,
       listModal: [],
-      fromChain: listChains.find((elem) => elem.name === 'Binance'),
-      toChain: listChains.find((elem) => elem.name === 'Polygon'),
+      fromChain,
+      toChain,
       identifierModal: {},
       listTokens,
-      fromToken: {
-        "name": "PancakeSwap Token",
-        "symbol": "CAKE",
-        "address": "0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82",
-        "chainId": 56,
-        "decimals": 18,
-        "image": "https://tokens.pancakeswap.finance/images/0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82.png"
-      },
-      toToken: {
-            "name": "Aave",
-            "address": "0xD6DF932A45C0f255f85145f286eA0b292B21C90B",
-            "symbol": "AAVE",
-            "decimals": 18,
-            "chainId": 137,
-            "image": "https://etherscan.io/token/images/aave_32.png"
-        },
+      fromToken,
+      toToken,
       chainId: 56,
       wrongNetwork: false,
       isConnect: false,
       walletAddress: '',
       balance: 0,
-      isApprove: false
+      isApprove: false,
+      amount: 0,
+      amountOut: 0
     }
   },
   mounted(){
@@ -124,48 +129,93 @@ export default {
             this.walletAddress = ''
             this.isConnect = false
             this.balance = 0
+            this.amount = 0
+            this.amountOut = 0
           } else {
             this.walletAddress = data[0]
             this.isConnect = true
           }
         })
         ethereum.on('chainChanged', (data) => {
-          setChainId(Number(data))
-          connectWallet()
-
+          this.connectWallet()
         })
       }
   },
+  watch: {
+    fromChain(){
+      this.fromToken = this.listTokens[this.fromChain.name][0]
+    },
+    toChain(){
+      this.toToken = this.listTokens[this.toChain.name][0]
+    },
+    fromToken(){
+      this.connectWallet()
+      this.amount = 0
+      this.amountOut = 0
+    },
+    toToken() {
+      this.connectWallet()
+      this.amount = 0
+      this.amountOut = 0
+    },
+    async amount(){
+      const d = await getQuote(this.fromChain, this.toChain, this.fromToken, this.toToken, utils.parseUnits(parseFloat(this.amount === '' ? '0' : this.amount).toString(), this.fromToken.decimals));
+      this.amountOut = utils.formatUnits(d, this.toToken.decimals)
+    }
+
+  },
   methods: {
+    formatBalance(balance, decimals){
+      return utils.formatUnits(balance, decimals)
+    },
     getListModal(data){
       this.listModal = []
       if(data === 'fromChain') {
         this.identifierModal = {postfix: 'chain', prefix: 'from'}
         this.listChains.forEach(element => {
-            this.listModal = [...this.listModal, {image: element.image, name: element.name, symbol: element.tokenSymbol, address: '', decimals: 0}]
+            this.listModal = [...this.listModal, {logoURI: element.logoURI, name: element.name, symbol: element.tokenSymbol, address: element.weth, axlUSDC: element.axlUSDC, usdc: element.usdc, weth: element.weth, decimals: 0}]
         });
       }
       if(data === 'toChain') {
         this.identifierModal = {postfix: 'chain', prefix: 'to'}
         this.listChains.forEach(element => {
-            this.listModal = [...this.listModal, {image: element.image, name: element.name, symbol: element.tokenSymbol, address: '', decimals: 0}]
+            this.listModal = [...this.listModal, {logoURI: element.logoURI, name: element.name, symbol: element.tokenSymbol, address: element.weth, axlUSDC: element.axlUSDC, usdc: element.usdc, weth: element.weth, decimals: 0}]
         });
       }
       if(data === 'fromToken') {
         this.identifierModal = {postfix: 'token', prefix: 'from'}
         this.listTokens[this.fromChain.name].forEach((element) => {
-          this.listModal = [...this.listModal, {image: element.logoURI, name: element.name, symbol: element.symbol, address: element.address, decimals: element.decimals}]
+          this.listModal = [...this.listModal, {logoURI: element.logoURI, name: element.name, symbol: element.symbol, address: element.address, decimals: element.decimals}]
         })
       }
       if(data === 'toToken') {
         this.identifierModal = {postfix: 'token', prefix: 'to'}
         this.listTokens[this.toChain.name].forEach((element) => {
-          this.listModal = [...this.listModal, {image: element.logoURI, name: element.name, symbol: element.symbol, address: element.address, decimals: element.decimals}]
+          this.listModal = [...this.listModal, {logoURI: element.logoURI, name: element.name, symbol: element.symbol, address: element.address, decimals: element.decimals}]
         })
       }
       this.openModal = true
     },
+    selectList(data) {
+      if(data) {
+        if(data.identifier.postfix === 'chain') {
+          if(data.identifier.prefix === 'from') {
+            this.fromChain = data.item
+          } else {
+            this.toChain = data.item
+          }
+        }
 
+        if(data.identifier.postfix === 'token') {
+          if(data.identifier.prefix === 'from') {
+            this.fromToken = data.item
+          } else {
+            this.toToken = data.item
+          }
+        }
+      }
+      this.openModal = false
+    },
     async connectWallet(){
       try {
         await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -174,19 +224,36 @@ export default {
         const wallet = await signer.getAddress();
         const chainId = await signer.getChainId();
         this.chainId = chainId
-        if (getChain(fromChain.name).chainId === chainId) {
+        if (getChain(this.fromChain.name).chainId === chainId) {
           this.wrongNetwork = false
+          this.balance = this.fromToken.address === '0x' ? await getNativeBalance(wallet, provider) : await getBalance(this.fromToken, signer, wallet, provider)
+          this.isApprove =this.fromToken.address === '0x' ? true : await checkApprove(this.fromToken, wallet, this.fromChain);
         } else {
           this.wrongNetwork = true
         }
         this.walletAddress = wallet;
         this.isConnect = true
-        this.balance = await getBalance(fromToken, signer, wallet, provider)
-        this.isApprove = await checkApprove(fromToken, walletAddress, fromChain);
         return signer
       } catch (error) {
+        console.log(error);
         console.log('oops something went wrong');
       }
+    },
+    async send(){
+      if(this.isConnect) {
+        if(!this.wrongNetwork) {
+          if(this.amount > 0) {
+            if(this.fromChain.name !== this.toChain.name) {
+              if(this.isApprove) {
+
+              }
+            }
+          }
+        }
+      } else {
+        this.connectWallet()
+      }
+      
     }
   }
 }

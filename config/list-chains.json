@@ -16,8 +16,9 @@
     "curvePools": "0x6731D8ce7C52FEc9136cf3b7d122C032C46fF58f",
     "explorer": "https://bscscan.com/tx/",
     "messageSender": "0xc787a757ff2bc14644ec34b03826eb02d7286afe",
-    "messageReceiver": "0xdF8A57a7D33879A3C293E836aCF232B77bFD3cf2",
-    "image": "https://tokens.pancakeswap.finance/images/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c.png"
+    "messageReceiver": "0xB6F651fE5cbb33bF3DB956A730A5183374F68B04",
+    "logoURI": "https://tokens.pancakeswap.finance/images/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c.png",
+    "axlUSDC": "0x4268B8F0B87b6Eae5d897996E6b845ddbD99Adf3"
   },
   {
     "name": "Polygon",
@@ -27,7 +28,7 @@
     "tokens": {
       "uusdc": "axlUSDC"
     },
-    "rpc": "https://matic-mainnet.chainstacklabs.com",
+    "rpc": "https://polygon-rpc.com/",
     "tokenName": "Matic",
     "tokenSymbol": "MATIC",
     "weth": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
@@ -35,8 +36,9 @@
     "router": "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
     "curvePools": "0xfBA3b7Bb043415035220b1c44FB4756434639392",
     "explorer": "https://polygonscan.com/tx/",
-    "messageSender": "0x6519BC2d3730D45e482385ae3d3802E3345Bb31f",
+    "messageSender": "0xE40435D94C199612e73121c9daA92005Dca2BC85",
     "messageReceiver": "0x0dEaab9C041DA60d1bBE5216B42CBc9B41A2725c",
-    "image": "https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c25fa5/svg/color/matic.svg"
+    "logoURI": "https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1a63530be6e374711a8554f31b17e4cb92c25fa5/svg/color/matic.svg",
+    "axlUSDC": "0x750e4C4984a9e0f12978eA6742Bc1c5D248f40ed"
   }
 ]

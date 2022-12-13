@@ -2309,6 +2309,14 @@
         "logoURI": "https://tokens.pancakeswap.finance/images/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c.png"
       },
       {
+        "name": "BNB",
+        "symbol": "BNB",
+        "address": "0x",
+        "chainId": 56,
+        "decimals": 18,
+        "logoURI": "https://tokens.pancakeswap.finance/images/0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c.png"
+      },
+      {
         "name": "BitWell Token",
         "symbol": "WELL",
         "address": "0xf07a32Eb035b786898c00bB1C64d8c6F8E7a46D5",

@@ -1,6 +1,6 @@
 <template>
   <div class="fixed top-0 left-0 right-0 z-50 h-full" @click="$emit('closeModal')">
-    <div class="backdrop-blur-sm bg-white/30 flex items-center justify-center h-full">
+    <div class="backdrop-blur-sm flex items-center justify-center h-full">
         <div class="bg-slate-800 rounded-lg min-w-[340px] grid gap-3 pb-5" @click.stop="">
           <div class="text-center pt-5 text-white/50">
             Select {{ identifier.postfix === 'token' ? 'Token' : 'Chain' }}
@@ -11,7 +11,7 @@
           </div>
           <div class="max-h-[50vh] no-scrollbar overflow-y-auto">
             <button @click.stop="$emit('closeModal', {item, identifier})" class="group p-5 flex w-full items-center gap-x-3 text-sm py-2 hover:bg-blue-600" v-for="(item, index) in filteredList" :key="index">
-              <img class="rounded-full" width="24px" :src="item.image" alt="">
+              <img class="rounded-full" width="24px" :src="item.logoURI" alt="">
               <div class="flex flex-col">
                 <div class="text-white">{{ item.name }}</div>
                 <div class="text-xs text-left text-white/50">{{item.symbol}}</div>

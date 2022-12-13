@@ -28,8 +28,8 @@ async function main() {
   /**
    * DEPLOY ON BSC
    */
-  // const binanceProvider = getDefaultProvider(binanceChain.rpc);
-  // const binanceConnectedWallet = wallet.connect(binanceProvider);
+  const binanceProvider = getDefaultProvider(binanceChain.rpc);
+  const binanceConnectedWallet = wallet.connect(binanceProvider);
   // const binanceSender = await deployContract(
   //   binanceConnectedWallet,
   //   MessageSenderContract,
@@ -42,7 +42,7 @@ async function main() {
   //     binanceChain.usdc,
   //   ],
   //   {
-  //     gasLimit: 18000000,
+  //     // gasLimit: 18000000,
   //     gasPrice: 5000000000,
   //   }
   // );
@@ -50,53 +50,34 @@ async function main() {
 
   // binanceChain.messageSender = binanceSender.address;
 
-  // const binanceReceiver = await deployContract(
-  //   binanceConnectedWallet,
-  //   MessageReceiverContract,
-  //   [
-  //     binanceChain.gateway,
-  //     binanceChain.gasReceiver,
-  //     binanceChain.curvePools,
-  //     binanceChain.router,
-  //     binanceChain.weth,
-  //     binanceChain.usdc,
-  //   ],
-  //   {
-  //     gasLimit: 18000000,
-  //     gasPrice: 5000000000,
-  //   }
-  // );
-  // console.log("MessageReceiver deployed on polygon:", binanceReceiver.address);
+  const binanceReceiver = await deployContract(
+    binanceConnectedWallet,
+    MessageReceiverContract,
+    [
+      binanceChain.gateway,
+      binanceChain.gasReceiver,
+      binanceChain.curvePools,
+      binanceChain.router,
+      binanceChain.weth,
+      binanceChain.usdc,
+    ],
+    {
+      // gasLimit: 18000000,
+      gasPrice: 5000000000,
+    }
+  );
+  console.log("MessageReceiver deployed on polygon:", binanceReceiver.address);
 
-  // binanceChain.messageReceiver = binanceReceiver.address;
+  binanceChain.messageReceiver = binanceReceiver.address;
 
   /**
    * DEPLOY ON POLYGON
    */
   const polygonProvider = getDefaultProvider(polygonChain.rpc);
   const polygonConnectedWallet = wallet.connect(polygonProvider);
-  // const polygonSender = await deployContract(
-  //   polygonConnectedWallet,
-  //   MessageSenderContract,
-  //   [
-  //     polygonChain.gateway,
-  //     polygonChain.gasReceiver,
-  //     polygonChain.curvePools,
-  //     polygonChain.router,
-  //     polygonChain.weth,
-  //     polygonChain.usdc,
-  //   ],
-  //   {
-  //     gasLimit: 18000000,
-  //     gasPrice: 50000000000,
-  //   }
-  // );
-  // console.log("MessageSender deployed on Avalanche:", polygonSender.address);
-  // polygonChain.messageSender = polygonSender.address;
-
-  const polygonReceiver = await deployContract(
+  const polygonSender = await deployContract(
     polygonConnectedWallet,
-    MessageReceiverContract,
+    MessageSenderContract,
     [
       polygonChain.gateway,
       polygonChain.gasReceiver,
@@ -110,11 +91,30 @@ async function main() {
       gasPrice: 50000000000,
     }
   );
-  console.log(
-    "MessageReceiver deployed on Avalanche:",
-    polygonReceiver.address
-  );
-  polygonChain.messageReceiver = polygonReceiver.address;
+  console.log("MessageSender deployed on Avalanche:", polygonSender.address);
+  polygonChain.messageSender = polygonSender.address;
+
+  // const polygonReceiver = await deployContract(
+  //   polygonConnectedWallet,
+  //   MessageReceiverContract,
+  //   [
+  //     polygonChain.gateway,
+  //     polygonChain.gasReceiver,
+  //     polygonChain.curvePools,
+  //     polygonChain.router,
+  //     polygonChain.weth,
+  //     polygonChain.usdc,
+  //   ],
+  //   {
+  //     // gasLimit: 18000000,
+  //     gasPrice: 50000000000,
+  //   }
+  // );
+  // console.log(
+  //   "MessageReceiver deployed on Avalanche:",
+  //   polygonReceiver.address
+  // );
+  // polygonChain.messageReceiver = polygonReceiver.address;
 
   // update chains
   const updatedChains = [binanceChain, polygonChain];

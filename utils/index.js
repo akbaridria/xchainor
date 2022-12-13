@@ -15,11 +15,13 @@ import {
   import MessageSenderContract from "../artifacts/contracts/MessageSender.sol/MessageSender.json";
   import MessageReceiverContract from "../artifacts/contracts/MessageReceiver.sol/MessageReceiver.json";
   import IERC20 from "../artifacts/@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IERC20.sol/IERC20.json";
-  
+  import AbiUni from "../artifacts/contracts/interface/uniswap/USwap.sol/USwap.json";
+  import AbiCrv from "../artifacts/contracts/interface/curve/CSwap.sol/CSwap.json";
+
   let chains = require("../config/list-chains.json");
-  
+
   export const approveToken = async (token, fromChain) => {
-    const provider = new providers.Web3Provider((window).ethereum);
+    const provider = new providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const erc20 = new Contract(token.address, IERC20.abi, signer);
     const gasPrice = await provider.getGasPrice();
@@ -46,12 +48,8 @@ import {
       return "gagal";
     }
   };
-  export const checkApprove = async (
-    token,
-    walletAddress,
-    fromChain
-  ) => {
-    const provider = new providers.Web3Provider((window).ethereum);
+  export const checkApprove = async (token, walletAddress, fromChain) => {
+    const provider = new providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const erc20 = new Contract(token.address, IERC20.abi, signer);
     const sourceContracts = new Contract(
@@ -60,10 +58,7 @@ import {
       signer
     );
     const data = await erc20.allowance(walletAddress, sourceContracts.address);
-    if (
-      data.gt(ethers.utils.parseUnits("1000", 18)) ||
-      ["AVAX", "BNB"].includes(token.symbol)
-    ) {
+    if (data.gt(ethers.utils.parseUnits("1000", 18))) {
       return true;
     } else {
       return false;
@@ -71,7 +66,7 @@ import {
   };
   export const axelarGasFee = async (fromChain) => {
     const api = new AxelarQueryAPI({ environment: Environment.MAINNET });
-  
+
     if (fromChain.name === "Avalanche") {
       const gasFee = await api.estimateGasFee(
         EvmChain.AVALANCHE,
@@ -90,25 +85,19 @@ import {
       return gasFee;
     }
   };
-  
+
   export const getChain = (chainName) => {
     return chains.find((chain) => chain.name === chainName);
   };
-  
-  export async function sendTx(
-    tokenIn,
-    tokenOut,
-    fromChain,
-    toChain,
-    amount
-  ) {
-    const provider = new providers.Web3Provider((window).ethereum);
+
+  export async function sendTx(tokenIn, tokenOut, fromChain, toChain, amount) {
+    const provider = new providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const toChainConnectedWallet = providers.getDefaultProvider(
       getChain(toChain.name).rpc
     );
     const gasPrice = await signer.getGasPrice();
-  
+
     const sourceContracts = new Contract(
       getChain(fromChain.name).messageSender,
       MessageSenderContract.abi,
@@ -120,11 +109,6 @@ import {
       toChainConnectedWallet
     );
     const gasFee = await axelarGasFee(fromChain);
-    console.log(
-      ethers.utils
-        .parseUnits(amount, tokenIn.decimals)
-        .add(BigNumber.from(gasFee))
-    );
     try {
       const receipt = await sourceContracts
         .SwapAndPort(
@@ -149,23 +133,200 @@ import {
           }
         )
         .then((tx) => tx.wait());
-  
+
       return receipt.transactionHash;
     } catch (error) {
       return "gagal";
     }
   }
-  export async function getBalance(
-    token,
-    signer,
-    walletAddress,
-    providers
-  ) {
-    if (["AVAX", "BNB"].includes(token.symbol)) {
-      const balance = await providers.getBalance(walletAddress);
-      return balance;
-    }
+  export async function getBalance(token, signer, walletAddress, providers) {
     const erc20 = new Contract(token.address, IERC20.abi, signer);
     const balance = await erc20.balanceOf(walletAddress);
     return balance;
+  }
+
+  export async function getNativeBalance(walletAddress, providers) {
+    const balance = await providers.getBalance(walletAddress);
+    return balance;
+  }
+
+  export async function getQuote(
+    fromChain,
+    toChain,
+    fromToken,
+    toToken,
+    amount
+  ) {
+    try {
+      const fromChainConnectedWallet = providers.getDefaultProvider(
+        getChain(fromChain.name).rpc
+      );
+      const toChainConnectedWallet = providers.getDefaultProvider(
+        getChain(toChain.name).rpc
+      );
+
+      const from_univ2 = new Contract(
+        getChain(fromChain.name).router,
+        AbiUni.abi,
+        fromChainConnectedWallet
+      );
+      const from_crv = new Contract(
+        getChain(fromChain.name).curvePools,
+        AbiCrv.abi,
+        fromChainConnectedWallet
+      );
+      const to_univ2 = new Contract(
+        getChain(toChain.name).router,
+        AbiUni.abi,
+        toChainConnectedWallet
+      );
+      const to_crv = new Contract(
+        getChain(toChain.name).curvePools,
+        AbiCrv.abi,
+        toChainConnectedWallet
+      );
+
+      // axlUSDC
+      if (fromToken.address === fromChain.axlUSDC) {
+        if (toToken.address === toChain.axlUSDC) {
+          return amount;
+        } else if (toToken.address === toChain.usdc) {
+          const result = await to_crv.get_dy(0, 1, amount);
+          return result;
+        } else if (toToken.address === "0x") {
+          const r = await to_crv.get_dy(0, 1, amount);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const r = await to_crv.get_dy(0, 1, amount);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+
+        // usdc
+      } else if (fromToken.address === fromChain.usdc) {
+        if (toToken.address === toChain.axlUSDC) {
+          const r = await from_crv.get_dy(1, 0, amount);
+          return r;
+        } else if (toToken.address === toChain.usdc) {
+          const r = await from_crv.get_dy(1, 0, amount);
+          const result = await to_crv.get_dy(0, 1, r);
+          return result;
+        } else if (toToken.address === "0x") {
+          const rr = await from_crv.get_dy(1, 0, amount);
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const rr = await from_crv.get_dy(1, 0, amount);
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+      } else if (fromToken.address === "0x") {
+        if (toToken.address === toChain.axlUSDC) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.get_dy(1, 0, r1[1]);
+          return r;
+        } else if (toToken.address === toChain.usdc) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.get_dy(1, 0, r1[1]);
+          const result = await to_crv.get_dy(0, 1, r);
+          return result;
+        } else if (toToken.address === "0x") {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await from_crv.get_dy(1, 0, r2[1]);
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await from_crv.get_dy(1, 0, r2[1]);
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+      } else {
+        if (toToken.address === toChain.axlUSDC) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.get_dy(1, 0, r1[2]);
+          return r;
+        } else if (toToken.address === toChain.usdc) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.get_dy(1, 0, r1[2]);
+          const result = await to_crv.get_dy(0, 1, r);
+          return result;
+        } else if (toToken.address === "0x") {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await from_crv.get_dy(1, 0, r2[2]);
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await from_crv.get_dy(1, 0, r2[2]);
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+      }
+    } catch {
+      return 0;
+    }
   }
