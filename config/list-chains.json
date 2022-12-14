@@ -61,5 +61,26 @@
     "messageReceiver": "0xf831609e6CcF6E92d42259D58D118eea4e6B1A90",
     "logoURI": "https://moonscan.io/token/images/wrappedglmr_32.png",
     "axlUSDC": "0xCa01a1D0993565291051daFF390892518ACfAD3A"
+  },
+  {
+    "name": "Arbitrum",
+    "chainId": 42161,
+    "gateway": "0xe432150cce91c13a887f7D836923d5597adD8E31",
+    "gasReceiver": "0x2d5d7d31F671F86C782533cc367F14109a082712",
+    "tokens": {
+      "uusdc": "axlUSDC"
+    },
+    "rpc": "https://arb1.arbitrum.io/rpc",
+    "tokenName": "Ether",
+    "tokenSymbol": "ETH",
+    "weth": "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1",
+    "usdc": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
+    "router": "0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506",
+    "curvePools": "0x15a1C069Fcf6F79a3D5Bb5d4A8ba004FbF4fABAc",
+    "explorer": "https://moonscan.io/tx/",
+    "messageSender": "0x57C45e2F3df3391D29A3f867C2a33846d2067Cb0",
+    "messageReceiver": "0x8e22Cbc9C2ae4742Aa0E147AD9ab111457b1258D",
+    "logoURI": "https://arbiscan.io/images/svg/brands/arbitrum.svg",
+    "axlUSDC": "0xEB466342C4d449BC9f53A865D5Cb90586f405215"
   }
 ]
