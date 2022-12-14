@@ -82,5 +82,26 @@
     "messageReceiver": "0x8e22Cbc9C2ae4742Aa0E147AD9ab111457b1258D",
     "logoURI": "https://arbiscan.io/images/svg/brands/arbitrum.svg",
     "axlUSDC": "0xEB466342C4d449BC9f53A865D5Cb90586f405215"
+  },
+  {
+    "name": "Fantom",
+    "chainId": 250,
+    "gateway": "0x304acf330bbE08d1e512eefaa92F6a57871fD895",
+    "gasReceiver": "0x2d5d7d31F671F86C782533cc367F14109a082712",
+    "tokens": {
+      "uusdc": "axlUSDC"
+    },
+    "rpc": "https://rpcapi.fantom.network/",
+    "tokenName": "Fantom",
+    "tokenSymbol": "FTM",
+    "weth": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
+    "usdc": "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
+    "router": "0x16327E3FbDaCA3bcF7E38F5Af2599D2DDc33aE52",
+    "curvePools": "0x261036923F4aAF1322a3173921fCBdaE51352CAe",
+    "explorer": "https://moonscan.io/tx/",
+    "messageSender": "0x1034933f31B4F7A2D5D98DBcC90544204dF08B2B",
+    "messageReceiver": "0x9FA26844c6A1caF9a5F4a41F9f8aD60B38dae248",
+    "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/3513.png",
+    "axlUSDC": "0x1B6382DBDEa11d97f24495C9A90b7c88469134a4"
   }
 ]

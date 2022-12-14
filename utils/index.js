@@ -74,6 +74,8 @@ import {
         ? EvmChain.MOONBEAM
         : fromChain.name === "Arbitrum"
         ? "Arbitrum"
+        : fromChain.name === 'Fantom' 
+        ? EvmChain.FANTOM
         : EvmChain.POLYGON;
     const to =
       toChain.name === "Binance"
@@ -82,6 +84,8 @@ import {
         ? EvmChain.MOONBEAM
         : fromChain.name === "Arbitrum"
         ? "Arbitrum"
+        : fromChain.name === 'Fantom' 
+        ? EvmChain.FANTOM
         : EvmChain.POLYGON;
     const gas =
       fromChain.name === "Binance"
@@ -90,6 +94,8 @@ import {
         ? GasToken.GLMR
         : fromChain.name === "Arbitrum"
         ? "ETH"
+        : fromChain.name === 'Fantom' 
+        ? GasToken.FTM
         : GasToken.MATIC;
     console.log(from, to, gas);
     const gasFee = await api.estimateGasFee(

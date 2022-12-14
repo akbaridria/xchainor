@@ -108,11 +108,13 @@ export default {
     const bscTokens = require('../config/bsc-token-list.json');
     const moonBeamTokens = require('../config/moonbeam-token-list.json');
     const arbitrumTokens = require('../config/arbitrum-token-list.json');
+    const fantomTokens = require('../config/fantom-token-list.json');
     const listTokens = {
       'Binance' : bscTokens.tokens,
       'Polygon' : polygonTokens.tokens,
       'Moonbeam' : moonBeamTokens.tokens,
-      'Arbitrum' : arbitrumTokens.tokens
+      'Arbitrum' : arbitrumTokens.tokens,
+      'Fantom' : fantomTokens.tokens
     }
     const fromChain = listChains.find((elem) => elem.name === 'Binance')
     const toChain = listChains.find((elem) => elem.name === 'Moonbeam')

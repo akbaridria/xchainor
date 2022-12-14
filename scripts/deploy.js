@@ -20,7 +20,7 @@ const MessageReceiverContract = require("../artifacts/contracts/MessageReceiver.
 let chains = require("../config/list-chains.json");
 
 // get chains
-const binanceChain = chains.find((chain) => chain.name === "Arbitrum");
+const binanceChain = chains.find((chain) => chain.name === "Fantom");
 const polygonChain = chains.find((chain) => chain.name === "Polygon");
 
 // deploy script

@@ -950,6 +950,14 @@
     },
     {
       "chainId": 250,
+      "address": "0x",
+      "name": "Fantom",
+      "symbol": "FTM",
+      "decimals": 18,
+      "logoURI": "https://assets.coingecko.com/coins/images/16036/thumb/Fantom.png?1622679930"
+    },
+    {
+      "chainId": 250,
       "address": "0xb66b5d38e183de42f21e92abcaf3c712dd5d6286",
       "name": "Morpheus Swap",
       "symbol": "PILLS",
