@@ -57,8 +57,8 @@
     "router": "0x70085a09D30D6f8C4ecF6eE10120d1847383BB57",
     "curvePools": "0xB0Dfd6f3fdDb219E60fCDc1EA3D04B22f2FFa9Cc",
     "explorer": "https://moonscan.io/tx/",
-    "messageSender": "0xbe61a4dd675a385c24d1012B8e354a03E4E3A445",
-    "messageReceiver": "0x704138d97D1cDCb45AC95487f21aa9D86F6a9314",
+    "messageSender": "0xb6F8F0ACD5213D9A339d7FE65cFC5282B8355B9A",
+    "messageReceiver": "0xf831609e6CcF6E92d42259D58D118eea4e6B1A90",
     "logoURI": "https://moonscan.io/token/images/wrappedglmr_32.png",
     "axlUSDC": "0xCa01a1D0993565291051daFF390892518ACfAD3A"
   }

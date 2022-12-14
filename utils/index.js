@@ -67,9 +67,24 @@ import {
   };
   export const axelarGasFee = async (fromChain, toChain) => {
     const api = new AxelarQueryAPI({ environment: Environment.MAINNET });
-    const from = fromChain.name === 'Binance' ? EvmChain.BINANCE : EvmChain.POLYGON
-    const to = toChain.name === 'Binance' ? EvmChain.BINANCE : EvmChain.POLYGON
-    const gas = fromChain.name === 'Binance' ? GasToken.BINANCE : GasToken.MATIC
+    const from =
+      fromChain.name === "Binance"
+        ? EvmChain.BINANCE
+        : fromChain.name === "Moonbeam"
+        ? EvmChain.MOONBEAM
+        : EvmChain.POLYGON;
+    const to =
+      toChain.name === "Binance"
+        ? EvmChain.BINANCE
+        : fromChain.name === "Moonbeam"
+        ? EvmChain.MOONBEAM
+        : EvmChain.POLYGON;
+    const gas =
+      fromChain.name === "Binance"
+        ? GasToken.BINANCE
+        : fromChain.name === "Moonbeam"
+        ? GasToken.GLMR
+        : GasToken.MATIC;
     console.log(from, to, gas);
     const gasFee = await api.estimateGasFee(
       from,
@@ -85,9 +100,16 @@ import {
     return chains.find((chain) => chain.name === chainName);
   };
 
-  export async function sendTx(tokenIn, tokenOut, fromChain, toChain, amount, minAmount) {
-    console.log(tokenIn)
-    console.log(tokenOut)
+  export async function sendTx(
+    tokenIn,
+    tokenOut,
+    fromChain,
+    toChain,
+    amount,
+    minAmount
+  ) {
+    console.log(tokenIn);
+    console.log(tokenOut);
     const provider = new providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const toChainConnectedWallet = providers.getDefaultProvider(
@@ -106,11 +128,12 @@ import {
       toChainConnectedWallet
     );
     const gasFee = await axelarGasFee(fromChain, toChain);
-    console.log( toChain.name,
+    console.log(
+      toChain.name,
       destContract.address,
-      tokenIn.address === '0x' ? fromChain.weth : tokenIn.address,
-      tokenOut.address === '0x' ? toChain.weth : tokenOut.address,
-      tokenIn.address === '0x'
+      tokenIn.address === "0x" ? fromChain.weth : tokenIn.address,
+      tokenOut.address === "0x" ? toChain.weth : tokenOut.address,
+      tokenIn.address === "0x"
         ? ethers.utils
             .parseUnits(amount, tokenIn.decimals)
             .add(BigNumber.from(gasFee))
@@ -118,22 +141,24 @@ import {
       BigNumber.from(gasFee),
       BigNumber.from(ethers.utils.parseUnits(minAmount, tokenOut.decimals)),
       {
-        value: tokenIn.address === '0x'
-          ? ethers.utils
-              .parseUnits(amount, tokenIn.decimals)
-              .add(BigNumber.from(gasFee))
-          : BigNumber.from(gasFee),
+        value:
+          tokenIn.address === "0x"
+            ? ethers.utils
+                .parseUnits(amount, tokenIn.decimals)
+                .add(BigNumber.from(gasFee))
+            : BigNumber.from(gasFee),
         gasLimit: 750000,
         gasPrice: gasPrice,
-      });
+      }
+    );
     try {
       const receipt = await sourceContracts
         .requestTransfersOut(
           toChain.name,
           destContract.address,
-          tokenIn.address === '0x' ? fromChain.weth : tokenIn.address,
-          tokenOut.address === '0x' ? toChain.weth : tokenOut.address,
-          tokenIn.address === '0x'
+          tokenIn.address === "0x" ? fromChain.weth : tokenIn.address,
+          tokenOut.address === "0x" ? toChain.weth : tokenOut.address,
+          tokenIn.address === "0x"
             ? ethers.utils
                 .parseUnits(amount, tokenIn.decimals)
                 .add(BigNumber.from(gasFee))
@@ -141,12 +166,13 @@ import {
           BigNumber.from(gasFee),
           BigNumber.from(ethers.utils.parseUnits(minAmount, tokenOut.decimals)),
           {
-            value: tokenIn.address === '0x'
-              ? ethers.utils
-                  .parseUnits(amount, tokenIn.decimals)
-                  .add(BigNumber.from(gasFee))
-              : BigNumber.from(gasFee),
-            gasLimit: 750000,
+            value:
+              tokenIn.address === "0x"
+                ? ethers.utils
+                    .parseUnits(amount, tokenIn.decimals)
+                    .add(BigNumber.from(gasFee))
+                : BigNumber.from(gasFee),
+            gasLimit: 1000000,
             gasPrice: gasPrice,
           }
         )
@@ -154,7 +180,7 @@ import {
 
       return receipt.transactionHash;
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return "gagal";
     }
   }
@@ -350,32 +376,476 @@ import {
     }
   }
 
-  function getQuoteFromMoonbeam(fromChain, toChain, fromToken, toToken){
-    const fromChainConnectedWallet = providers.getDefaultProvider(
-      getChain(fromChain.name).rpc
-    );
-    const toChainConnectedWallet = providers.getDefaultProvider(
-      getChain(toChain.name).rpc
-    );
+  export async function getQuoteFromMoonbeam(
+    fromChain,
+    toChain,
+    fromToken,
+    toToken,
+    amount
+  ) {
+    try {
+      const fromChainConnectedWallet = providers.getDefaultProvider(
+        getChain(fromChain.name).rpc
+      );
+      const toChainConnectedWallet = providers.getDefaultProvider(
+        getChain(toChain.name).rpc
+      );
+      const pool = "0xA1ffDc79f998E7fa91bA3A6F098b84c9275B0483";
+      const basePool = "0xB1BC9f56103175193519Ae1540A0A4572b1566F6";
 
-    const from_univ2 = new Contract(
-      getChain(fromChain.name).router,
-      AbiUni.abi,
-      fromChainConnectedWallet
-    );
-    const from_crv = new Contract(
-      getChain(fromChain.name).curvePools,
-      AbiCrv.abi,
-      fromChainConnectedWallet
-    );
-    const to_univ2 = new Contract(
-      getChain(toChain.name).router,
-      AbiUni.abi,
-      toChainConnectedWallet
-    );
-    const to_crv = new Contract(
-      getChain(toChain.name).curvePools,
-      AbiCrv.abi,
-      toChainConnectedWallet
-    );
+      const from_univ2 = new Contract(
+        getChain(fromChain.name).router,
+        AbiUni.abi,
+        fromChainConnectedWallet
+      );
+      const from_crv = new Contract(
+        getChain(fromChain.name).curvePools,
+        AbiStl.abi,
+        fromChainConnectedWallet
+      );
+      const to_univ2 = new Contract(
+        getChain(toChain.name).router,
+        AbiUni.abi,
+        toChainConnectedWallet
+      );
+      const to_crv = new Contract(
+        getChain(toChain.name).curvePools,
+        AbiCrv.abi,
+        toChainConnectedWallet
+      );
+
+      // axlUSDC
+      if (fromToken.address === fromChain.axlUSDC) {
+        if (toToken.address === toChain.axlUSDC) {
+          return amount;
+        } else if (toToken.address === toChain.usdc) {
+          const result = await to_crv.get_dy(0, 1, amount);
+          return result;
+        } else if (toToken.address === "0x") {
+          const r = await to_crv.get_dy(0, 1, amount);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const r = await to_crv.get_dy(0, 1, amount);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+
+        // usdc
+      } else if (fromToken.address === fromChain.usdc) {
+        if (toToken.address === toChain.axlUSDC) {
+          const r = await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            amount
+          );
+          return r;
+        } else if (toToken.address === toChain.usdc) {
+          const r = await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            amount
+          );
+          const result = await to_crv.get_dy(0, 1, r);
+          return result;
+        } else if (toToken.address === "0x") {
+          const rr = await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            amount
+          );
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const rr = await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            amount
+          );
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+      } else if (fromToken.address === "0x") {
+        if (toToken.address === toChain.axlUSDC) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r1[1]
+          );
+          return r;
+        } else if (toToken.address === toChain.usdc) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r1[1]
+          );
+          const result = await to_crv.get_dy(0, 1, r);
+          return result;
+        } else if (toToken.address === "0x") {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r2[1]
+          );
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r2[1]
+          );
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+      } else {
+        if (toToken.address === toChain.axlUSDC) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r1[2]
+          );
+          return r;
+        } else if (toToken.address === toChain.usdc) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r1[2]
+          );
+          const result = await to_crv.get_dy(0, 1, r);
+          return result;
+        } else if (toToken.address === "0x") {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r2[2]
+          );
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await await from_crv.calculateSwapFromBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r2[2]
+          );
+          const r = await to_crv.get_dy(0, 1, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+      }
+    } catch {
+      return 0;
+    }
+  }
+
+  export async function getQuoteToMoonbeam(
+    fromChain,
+    toChain,
+    fromToken,
+    toToken,
+    amount
+  ) {
+    try {
+      const pool = "0xA1ffDc79f998E7fa91bA3A6F098b84c9275B0483";
+      const basePool = "0xB1BC9f56103175193519Ae1540A0A4572b1566F6";
+
+      const fromChainConnectedWallet = providers.getDefaultProvider(
+        getChain(fromChain.name).rpc
+      );
+      const toChainConnectedWallet = providers.getDefaultProvider(
+        getChain(toChain.name).rpc
+      );
+
+      const from_univ2 = new Contract(
+        getChain(fromChain.name).router,
+        AbiUni.abi,
+        fromChainConnectedWallet
+      );
+      const from_crv = new Contract(
+        getChain(fromChain.name).curvePools,
+        AbiCrv.abi,
+        fromChainConnectedWallet
+      );
+      const to_univ2 = new Contract(
+        getChain(toChain.name).router,
+        AbiUni.abi,
+        toChainConnectedWallet
+      );
+      const to_crv = new Contract(
+        getChain(toChain.name).curvePools,
+        AbiStl.abi,
+        toChainConnectedWallet
+      );
+
+      if (fromToken.address === fromChain.axlUSDC) {
+        if (toToken.address === toChain.axlUSDC) {
+          return amount;
+        } else if (toToken.address === toChain.usdc) {
+          const result = await to_crv.calculateSwapToBase(
+            pool,
+            basePool,
+            0,
+            0,
+            amount
+          );
+          return result;
+        } else if (toToken.address === "0x") {
+          const r = await to_crv.calculateSwapToBase(
+            pool,
+            basePool,
+            0,
+            0,
+            amount
+          );
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const r = await to_crv.calculateSwapToBase(
+            pool,
+            basePool,
+            0,
+            0,
+            amount
+          );
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+
+        // usdc
+      } else if (fromToken.address === fromChain.usdc) {
+        if (toToken.address === toChain.axlUSDC) {
+          const r = await from_crv.get_dy(1, 0, amount);
+          return r;
+        } else if (toToken.address === toChain.usdc) {
+          const r = await from_crv.get_dy(1, 0, amount);
+          const result = await to_crv.calculateSwapToBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r
+          );
+          return result;
+        } else if (toToken.address === "0x") {
+          const rr = await from_crv.get_dy(1, 0, amount);
+          const r = await to_crv.calculateSwapToBase(pool, basePool, 0, 0, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const rr = await from_crv.get_dy(1, 0, amount);
+          const r = await to_crv.calculateSwapToBase(pool, basePool, 0, 0, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+      } else if (fromToken.address === "0x") {
+        if (toToken.address === toChain.axlUSDC) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.get_dy(1, 0, r1[1]);
+          return r;
+        } else if (toToken.address === toChain.usdc) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.get_dy(1, 0, r1[1]);
+          const result = await to_crv.calculateSwapToBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r
+          );
+          return result;
+        } else if (toToken.address === "0x") {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await from_crv.get_dy(1, 0, r2[1]);
+          const r = await to_crv.calculateSwapToBase(pool, basePool, 0, 0, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await from_crv.get_dy(1, 0, r2[1]);
+          const r = await to_crv.calculateSwapToBase(pool, basePool, 0, 0, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+      } else {
+        if (toToken.address === toChain.axlUSDC) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.get_dy(1, 0, r1[2]);
+          return r;
+        } else if (toToken.address === toChain.usdc) {
+          const r1 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const r = await from_crv.get_dy(1, 0, r1[2]);
+          const result = await to_crv.calculateSwapToBase(
+            pool,
+            basePool,
+            0,
+            0,
+            r
+          );
+          return result;
+        } else if (toToken.address === "0x") {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await from_crv.get_dy(1, 0, r2[2]);
+          const r = await to_crv.calculateSwapToBase(pool, basePool, 0, 0, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+          ]);
+          return r1[1];
+        } else {
+          const r2 = await from_univ2.getAmountsOut(amount, [
+            fromToken.address,
+            fromChain.weth,
+            fromChain.usdc,
+          ]);
+          const rr = await from_crv.get_dy(1, 0, r2[2]);
+          const r = await to_crv.calculateSwapToBase(pool, basePool, 0, 0, rr);
+          const r1 = await to_univ2.getAmountsOut(r, [
+            toChain.usdc,
+            toChain.weth,
+            toToken.address,
+          ]);
+          return r1[2];
+        }
+      }
+    } catch (error) {
+      return 0;
+    }
   }

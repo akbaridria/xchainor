@@ -14,6 +14,14 @@
     ],
     "tokens": [
       {
+        "name": "USDC (Wormhole)",
+        "address": "0x931715FEE2d06333043d11F658C8CE934aC61D0c",
+        "symbol": "USDC",
+        "decimals": 6,
+        "chainId": 1284,
+        "logoURI": "https://raw.githubusercontent.com/stellaswap/assets/main/bridge/USDC.png"
+      },
+      {
         "name": "Axelar Wrapped UST",
         "address": "0x085416975fe14C2A731a97eC38B9bF8135231F62",
         "symbol": "axlUST",
@@ -56,10 +64,58 @@
       {
         "name": "GLMR",
         "address": "0x",
-        "symbol": "WGLMR",
+        "symbol": "GLMR",
         "decimals": 18,
         "chainId": 1284,
         "logoURI": "https://moonscan.io/token/images/wrappedglmr_32.png"
+      },
+      {
+        "name": "Acala",
+        "address": "0xffffFFffa922Fef94566104a6e5A35a4fCDDAA9f",
+        "symbol": "ACAxc",
+        "decimals": 12,
+        "chainId": 1284,
+        "logoURI": "https://moonscan.io/token/images/acala_32.png"
+      },
+      {
+        "name": "Athos Finance",
+        "address": "0xCBABEe0658725b5B21e1512244734A5D5C6B51D6",
+        "symbol": "ATH",
+        "decimals": 18,
+        "chainId": 1284,
+        "logoURI": "https://moonscan.io/token/images/athosfinance_32.png"
+      },
+      {
+        "name": "xcDOT",
+        "address": "0xFfFFfFff1FcaCBd218EDc0EbA20Fc2308C778080",
+        "symbol": "DOTxc",
+        "decimals": 10,
+        "chainId": 1284,
+        "logoURI": "https://moonscan.io/token/images/polkadot-asset_32.png"
+      },
+      {
+        "name": "Wrapped Ether (wormhole)",
+        "address": "0xab3f0245B83feB11d15AAffeFD7AD465a59817eD",
+        "symbol": "ETH",
+        "decimals": 18,
+        "chainId": 1284,
+        "logoURI": "https://raw.githubusercontent.com/stellaswap/assets/main/bridge/ETH.png"
+      },
+      {
+        "name": "Wrapped BTC (wormhole)",
+        "address": "0xE57eBd2d67B462E9926e04a8e33f01cD0D64346D",
+        "symbol": "BTC",
+        "decimals": 8,
+        "chainId": 1284,
+        "logoURI": "https://raw.githubusercontent.com/stellaswap/assets/main/bridge/WBTC.png"
+      },
+      {
+        "name": "USDC (Axelar)",
+        "address": "0xCa01a1D0993565291051daFF390892518ACfAD3A",
+        "symbol": "axlUSDC",
+        "decimals": 6,
+        "chainId": 1284,
+        "logoURI": "https://raw.githubusercontent.com/stellaswap/assets/main/bridge/USDC.png"
       }
     ]
 }

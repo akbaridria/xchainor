@@ -74,14 +74,14 @@
     </div>
 
     <Modal v-if="openModal" :listModal="listModal" :identifier="identifierModal" @closeModal="selectList($event)" />
-    <ModalError v-if="openAlert" :title="titleAlert" :description="descAlert" @closeModal="openAlert = false" />
+    <ModalError v-if="openAlert" :title="titleAlert" :description="descAlert" @closeModal="(openAlert = false, connectWallet())" />
     <Loader v-if="isLoading" />
-    <ModalTx v-if="openTx" :link="linkExplorer" @closeModal="openTx = false" />
+    <ModalTx v-if="openTx" :link="linkExplorer" @closeModal="(openTx = false, amount = 0, connectWallet())" />
   </div>
 </template>
 
 <script>
-import { getBalance, getChain, sendTx, checkApprove, approveToken, getNativeBalance, getQuote } from "../utils";
+import { getBalance, getChain, sendTx, checkApprove, approveToken, getNativeBalance, getQuote, getQuoteFromMoonbeam, getQuoteToMoonbeam } from "../utils";
 const { ethers, BigNumber, utils } = require("ethers");
 const listChains  = require('../config/list-chains.json');
 
@@ -97,7 +97,7 @@ export default {
       'Moonbeam' : moonBeamTokens.tokens
     }
     const fromChain = listChains.find((elem) => elem.name === 'Binance')
-    const toChain = listChains.find((elem) => elem.name === 'Polygon')
+    const toChain = listChains.find((elem) => elem.name === 'Moonbeam')
     const fromToken  = listTokens[fromChain.name][0]
     const toToken = listTokens[toChain.name][0]
     return {
@@ -202,8 +202,20 @@ export default {
       this.amountOut = 0
     },
     async amount(){
-      const d = await getQuote(this.fromChain, this.toChain, this.fromToken, this.toToken, utils.parseUnits(parseFloat(this.amount === '' ? '0' : this.amount).toString(), this.fromToken.decimals));
-      this.amountOut = utils.formatUnits(BigNumber.from(d).sub(BigNumber.from(d).mul(5).div(100)), this.toToken.decimals)
+      let d;
+      console.log('running here');
+      console.log(this.amount);
+      if(this.fromChain.name === 'Moonbeam') {
+        d = await getQuoteFromMoonbeam(this.fromChain, this.toChain, this.fromToken, this.toToken, utils.parseUnits(parseFloat(this.amount === '' ? '0' : this.amount).toString(), this.fromToken.decimals));
+        this.amountOut = utils.formatUnits(BigNumber.from(d).sub(BigNumber.from(d).mul(5).div(100)), this.toToken.decimals)
+      } else if(this.toChain.name === 'Moonbeam') {
+        d = await getQuoteToMoonbeam(this.fromChain, this.toChain, this.fromToken, this.toToken, utils.parseUnits(parseFloat(this.amount === '' ? '0' : this.amount).toString(), this.fromToken.decimals));
+        this.amountOut = utils.formatUnits(BigNumber.from(d).sub(BigNumber.from(d).mul(5).div(100)), this.toToken.decimals)
+      } else {
+        d = await getQuote(this.fromChain, this.toChain, this.fromToken, this.toToken, utils.parseUnits(parseFloat(this.amount === '' ? '0' : this.amount).toString(), this.fromToken.decimals));
+        this.amountOut = utils.formatUnits(BigNumber.from(d).sub(BigNumber.from(d).mul(5).div(100)), this.toToken.decimals)
+      }
+      
     }
 
   },

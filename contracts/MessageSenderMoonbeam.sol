@@ -118,8 +118,8 @@ contract MessageSender {
     ) external payable {
         
         uint256 amountOut = this.SwapAndTransfer(tokenIn, amount, amountGas);
-        // bytes memory payload = abi.encode(setPayloads(msg.sender, tokenOut), minAmount);
-        // gasReceiver.payNativeGasForContractCallWithToken{value: amountGas}(address(this), destinationChain, destinationAddress, payload, "axlUSDC", amountOut, msg.sender);            
-        // gateway.callContractWithToken(destinationChain, destinationAddress, payload, "axlUSDC", amountOut);
+        bytes memory payload = abi.encode(setPayloads(msg.sender, tokenOut), minAmount);
+        gasReceiver.payNativeGasForContractCallWithToken{value: amountGas}(address(this), destinationChain, destinationAddress, payload, "axlUSDC", amountOut, msg.sender);            
+        gateway.callContractWithToken(destinationChain, destinationAddress, payload, "axlUSDC", amountOut);
     }
 }
