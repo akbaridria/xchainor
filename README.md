@@ -22,3 +22,6 @@ X-chainor is the bridge and swap that build on top of the axelar general message
   - SpiritSwap
   - Curve
 
+## Sneak Peek
+
+![Screenshot 2022-12-14 234857](https://user-images.githubusercontent.com/26589426/207657539-f9475ae1-797c-4ba4-a45e-ef021ce7c469.png)
