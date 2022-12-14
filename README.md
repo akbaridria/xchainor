@@ -18,4 +18,7 @@ X-chainor is the bridge and swap that build on top of the axelar general message
 - Polygon
   - QuickSwap
   - Curve
+- Fantom
+  - SpiritSwap
+  - Curve
 
