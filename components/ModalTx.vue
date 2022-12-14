@@ -4,14 +4,14 @@
         <div class="bg-slate-800 rounded-lg max-w-[340px] grid gap-3 p-5 text-left" @click.stop="">
           <div class="flex items-center justify-between gap-x-2 font-bold" >
             <div>
-              {{ title }} <ion-icon name="alert-circle"></ion-icon>
+              Transaction Success! <ion-icon name="checkmark-circle-outline"></ion-icon>
             </div>
             <div @click="$emit('closeModal')">
               <ion-icon name="close-outline" class="cursor-pointer text-blue-600 text-2xl"></ion-icon>
             </div>
           </div>
           <div>
-            {{ description }}
+            <a :href="`https://axelarscan.io/gmp/${link}`" target="_blank">Go to explorer! <ion-icon name="link-outline"></ion-icon></a>
           </div>
         </div>
     </div>
@@ -27,7 +27,7 @@ export default {
       required: false,
       default: 'Alert'
     },
-    description: {
+    link: {
       type: String,
       required: false,
       default: 'Make sure that you choose different chain.'

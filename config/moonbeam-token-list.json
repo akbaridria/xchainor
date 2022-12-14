@@ -1,0 +1,65 @@
+{
+    "name": "Quickswap Token List",
+    "timestamp": "2022-12-05T17:48:48.773Z",
+    "version": {
+        "major": 1,
+        "minor": 2,
+        "patch": 59
+    },
+    "tags": {},
+    "logoURI": "ipfs://QmQ9GCVmLQkbPohxKeCYkbpmwfTvHXrY64TmBsPQAZdbqZ",
+    "keywords": [
+        "uniswap",
+        "default"
+    ],
+    "tokens": [
+      {
+        "name": "Axelar Wrapped UST",
+        "address": "0x085416975fe14C2A731a97eC38B9bF8135231F62",
+        "symbol": "axlUST",
+        "decimals": 6,
+        "chainId": 1284,
+        "logoURI": "https://raw.githubusercontent.com/stellaswap/assets/main/tokenlist/0x085416975fe14C2A731a97eC38B9bF8135231F62/logo.png"
+      },
+      {
+        "name": "StellaSwap",
+        "address": "0x0E358838ce72d5e61E0018a2ffaC4bEC5F4c88d2",
+        "symbol": "Stell",
+        "decimals": 18,
+        "chainId": 1284,
+        "logoURI": "https://raw.githubusercontent.com/stellaswap/assets/main/tokenlist/0x0E358838ce72d5e61E0018a2ffaC4bEC5F4c88d2/logo.png"
+      },
+      {
+        "name": "BOBA",
+        "address": "0x18D17A9fD652D7d6a59903E23792ab97F832Ed6C",
+        "symbol": "BOBA",
+        "decimals": 18,
+        "chainId": 1284,
+        "logoURI": "https://raw.githubusercontent.com/stellaswap/assets/main/tokenlist/0x18D17A9fD652D7d6a59903E23792ab97F832Ed6C/logo.png"
+      },
+      {
+        "name": "Wrapped liquid staked DOT",
+        "address": "0x191cf2602Ca2e534c5Ccae7BCBF4C46a704bb949",
+        "symbol": "wstDOT",
+        "decimals": 10,
+        "chainId": 1284,
+        "logoURI": "https://raw.githubusercontent.com/stellaswap/assets/main/tokenlist/0x191cf2602Ca2e534c5Ccae7BCBF4C46a704bb949/logo.png"
+      },
+      {
+        "name": "Wrapped GLMR",
+        "address": "0xAcc15dC74880C9944775448304B263D191c6077F",
+        "symbol": "WGLMR",
+        "decimals": 18,
+        "chainId": 1284,
+        "logoURI": "https://moonscan.io/token/images/wrappedglmr_32.png"
+      },
+      {
+        "name": "GLMR",
+        "address": "0x",
+        "symbol": "WGLMR",
+        "decimals": 18,
+        "chainId": 1284,
+        "logoURI": "https://moonscan.io/token/images/wrappedglmr_32.png"
+      }
+    ]
+}

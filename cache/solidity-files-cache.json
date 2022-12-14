@@ -441,8 +441,8 @@
       ]
     },
     "C:\\Users\\akbaridria\\Desktop\\x-chainor\\contracts\\MessageSenderMoonbeam.sol": {
-      "lastModificationDate": 1670857284049,
-      "contentHash": "a08b66a980ac3e8da9b9c7e350e60b88",
+      "lastModificationDate": 1670976434210,
+      "contentHash": "7e0e20160ec71897d531807364a70c3c",
       "sourceName": "contracts/MessageSenderMoonbeam.sol",
       "solcConfig": {
         "version": "0.8.17",
@@ -484,8 +484,8 @@
       ]
     },
     "C:\\Users\\akbaridria\\Desktop\\x-chainor\\contracts\\MessageReceiverMoonbeam.sol": {
-      "lastModificationDate": 1670856620318,
-      "contentHash": "476ccd391f046afeb1d5bb9ed1774f8d",
+      "lastModificationDate": 1670976467939,
+      "contentHash": "9354e7102d442e1d0cc8fa12e315f1e1",
       "sourceName": "contracts/MessageReceiverMoonbeam.sol",
       "solcConfig": {
         "version": "0.8.17",

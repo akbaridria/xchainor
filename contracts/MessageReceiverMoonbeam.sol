@@ -43,15 +43,15 @@ contract MessageReceiver is AxelarExecutable {
         uint256 amountOut;
         address[] memory path;
         address basePool = 0xB1BC9f56103175193519Ae1540A0A4572b1566F6;
+        address pool = 0xA1ffDc79f998E7fa91bA3A6F098b84c9275B0483;
         
         if(tokenOut == address(usdc)) {
             IERC20(tokenAddress).approve(address(curvePools), amount);
-            amountOut = this.ExchangeToken(address(curvePools), basePool, 0, 0, amount, requestAmount, block.timestamp);
+            amountOut = this.ExchangeToken(pool, basePool, 0, 0, amount, requestAmount, block.timestamp);
             IERC20(address(usdc)).transfer(recipient, amountOut);
         } else if(tokenOut == address(weth)){
             IERC20(tokenAddress).approve(address(curvePools), amount); 
-            uint256 estimatedAmount = this.getRateExchangeUSDC(address(curvePools), basePool, 0, 0, amount);
-            uint256 amountSwap = this.ExchangeToken(address(curvePools), basePool, 0, 0, amount, estimatedAmount, block.timestamp);
+            uint256 amountSwap = this.ExchangeToken(pool, basePool, 0, 0, amount, 0, block.timestamp);
             path = new address[](2);
             path[0] = address(usdc);
             path[1] = address(weth);
@@ -59,8 +59,7 @@ contract MessageReceiver is AxelarExecutable {
             amountOut = router.swapExactTokensForETH(amountSwap, requestAmount, path, recipient, block.timestamp + 15)[path.length - 1];
         } else {
             IERC20(tokenAddress).approve(address(curvePools), amount);
-            uint256 estimatedAmount = this.getRateExchangeUSDC(address(curvePools), basePool, 0, 0, amount);
-            uint256 amountSwap = this.ExchangeToken(address(curvePools), basePool, 0, 0, amount, estimatedAmount, block.timestamp);
+            uint256 amountSwap = this.ExchangeToken(pool, basePool, 0, 0, amount, 0, block.timestamp);
             path = new address[](3);
             path[0] = address(usdc);
             path[1] = address(weth);

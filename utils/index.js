@@ -17,6 +17,7 @@ import {
   import IERC20 from "../artifacts/@axelar-network/axelar-gmp-sdk-solidity/contracts/interfaces/IERC20.sol/IERC20.json";
   import AbiUni from "../artifacts/contracts/interface/uniswap/USwap.sol/USwap.json";
   import AbiCrv from "../artifacts/contracts/interface/curve/CSwap.sol/CSwap.json";
+  import AbiStl from "../artifacts/contracts/interface/stellarswap/STwap.sol/STwap.json";
 
   let chains = require("../config/list-chains.json");
 
@@ -64,33 +65,29 @@ import {
       return false;
     }
   };
-  export const axelarGasFee = async (fromChain) => {
+  export const axelarGasFee = async (fromChain, toChain) => {
     const api = new AxelarQueryAPI({ environment: Environment.MAINNET });
-
-    if (fromChain.name === "Avalanche") {
-      const gasFee = await api.estimateGasFee(
-        EvmChain.AVALANCHE,
-        EvmChain.BINANCE,
-        GasToken.AVAX,
-        70000
-      );
-      return gasFee;
-    } else {
-      const gasFee = await api.estimateGasFee(
-        EvmChain.BINANCE,
-        EvmChain.AVALANCHE,
-        GasToken.BINANCE,
-        700000
-      );
-      return gasFee;
-    }
+    const from = fromChain.name === 'Binance' ? EvmChain.BINANCE : EvmChain.POLYGON
+    const to = toChain.name === 'Binance' ? EvmChain.BINANCE : EvmChain.POLYGON
+    const gas = fromChain.name === 'Binance' ? GasToken.BINANCE : GasToken.MATIC
+    console.log(from, to, gas);
+    const gasFee = await api.estimateGasFee(
+      from,
+      to,
+      gas,
+      70000
+    );
+    const gasF = BigNumber.from(gasFee).add(BigNumber.from(gasFee).mul(100).div(100))
+    return gasF;
   };
 
   export const getChain = (chainName) => {
     return chains.find((chain) => chain.name === chainName);
   };
 
-  export async function sendTx(tokenIn, tokenOut, fromChain, toChain, amount) {
+  export async function sendTx(tokenIn, tokenOut, fromChain, toChain, amount, minAmount) {
+    console.log(tokenIn)
+    console.log(tokenOut)
     const provider = new providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const toChainConnectedWallet = providers.getDefaultProvider(
@@ -108,22 +105,43 @@ import {
       MessageReceiverContract.abi,
       toChainConnectedWallet
     );
-    const gasFee = await axelarGasFee(fromChain);
+    const gasFee = await axelarGasFee(fromChain, toChain);
+    console.log( toChain.name,
+      destContract.address,
+      tokenIn.address === '0x' ? fromChain.weth : tokenIn.address,
+      tokenOut.address === '0x' ? toChain.weth : tokenOut.address,
+      tokenIn.address === '0x'
+        ? ethers.utils
+            .parseUnits(amount, tokenIn.decimals)
+            .add(BigNumber.from(gasFee))
+        : ethers.utils.parseUnits(amount, tokenIn.decimals),
+      BigNumber.from(gasFee),
+      BigNumber.from(ethers.utils.parseUnits(minAmount, tokenOut.decimals)),
+      {
+        value: tokenIn.address === '0x'
+          ? ethers.utils
+              .parseUnits(amount, tokenIn.decimals)
+              .add(BigNumber.from(gasFee))
+          : BigNumber.from(gasFee),
+        gasLimit: 750000,
+        gasPrice: gasPrice,
+      });
     try {
       const receipt = await sourceContracts
-        .SwapAndPort(
+        .requestTransfersOut(
           toChain.name,
           destContract.address,
-          tokenIn.address,
-          tokenOut.address,
-          ["AVAX", "BNB"].includes(tokenIn.symbol)
+          tokenIn.address === '0x' ? fromChain.weth : tokenIn.address,
+          tokenOut.address === '0x' ? toChain.weth : tokenOut.address,
+          tokenIn.address === '0x'
             ? ethers.utils
                 .parseUnits(amount, tokenIn.decimals)
                 .add(BigNumber.from(gasFee))
             : ethers.utils.parseUnits(amount, tokenIn.decimals),
           BigNumber.from(gasFee),
+          BigNumber.from(ethers.utils.parseUnits(minAmount, tokenOut.decimals)),
           {
-            value: ["AVAX", "BNB"].includes(tokenIn.symbol)
+            value: tokenIn.address === '0x'
               ? ethers.utils
                   .parseUnits(amount, tokenIn.decimals)
                   .add(BigNumber.from(gasFee))
@@ -136,6 +154,7 @@ import {
 
       return receipt.transactionHash;
     } catch (error) {
+      console.log(error)
       return "gagal";
     }
   }
@@ -329,4 +348,34 @@ import {
     } catch {
       return 0;
     }
+  }
+
+  function getQuoteFromMoonbeam(fromChain, toChain, fromToken, toToken){
+    const fromChainConnectedWallet = providers.getDefaultProvider(
+      getChain(fromChain.name).rpc
+    );
+    const toChainConnectedWallet = providers.getDefaultProvider(
+      getChain(toChain.name).rpc
+    );
+
+    const from_univ2 = new Contract(
+      getChain(fromChain.name).router,
+      AbiUni.abi,
+      fromChainConnectedWallet
+    );
+    const from_crv = new Contract(
+      getChain(fromChain.name).curvePools,
+      AbiCrv.abi,
+      fromChainConnectedWallet
+    );
+    const to_univ2 = new Contract(
+      getChain(toChain.name).router,
+      AbiUni.abi,
+      toChainConnectedWallet
+    );
+    const to_crv = new Contract(
+      getChain(toChain.name).curvePools,
+      AbiCrv.abi,
+      toChainConnectedWallet
+    );
   }

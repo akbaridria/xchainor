@@ -22,7 +22,7 @@ const wallet = getWallet();
 let chains = require("../config/list-chains.json");
 
 const bnbChain = chains.find(
-  (chain) => chain.name === "Binance"
+  (chain) => chain.name === "Moonbeam"
 ) ;
 const polygonChain = chains.find(
   (chain) => chain.name === "Polygon"
@@ -77,9 +77,9 @@ const sendTx = async () => {
   const api = new AxelarQueryAPI({ environment: Environment.MAINNET });
 
   const gasFee = await api.estimateGasFee(
-    EvmChain.BINANCE,
+    EvmChain.MOONBEAM,
     EvmChain.POLYGON,
-    GasToken.BINANCE,
+    GasToken.GLMR,
     700000
   );
   console.log("getting gas fees", gasFee); 
@@ -87,14 +87,15 @@ const sendTx = async () => {
     .requestTransfersOut(
       "Polygon",
       destContract.address,
-      "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+      "0xAcc15dC74880C9944775448304B263D191c6077F",
       "0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39",
-      ethers.utils.parseUnits("0.01", 18),
+      ethers.utils.parseUnits("2", 18),
       gasFee,
-      ethers.utils.parseUnits("1", 18),
+      ethers.utils.parseUnits("0.01", 18),
       {
-        value: ethers.utils.parseUnits("0.01", 18),
-        gasPrice: await bnbProvider.getGasPrice(),
+        value: ethers.utils.parseUnits("2", 18),
+        gasPrice: 120000000000,
+        gasLimit: 10000000
       }
     )
     .then((tx) => tx.wait());

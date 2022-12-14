@@ -48,7 +48,7 @@
                 <ion-icon name="chevron-down"></ion-icon>
               </button>
             </div>
-            <div class="text-white/50 text-sm">
+            <div class="flex items-center justify-between text-white/50 text-sm">
               <div>Minimum Received <ion-icon name="alert-circle-outline" /></div>
             </div>
           </div>
@@ -56,7 +56,7 @@
       </div>
       
       <div>
-        <button @click="connectWallet()" :class="wrongNetwork ? 'px-3 w-full py-2 text-sm bg-red-600 rounded-full font-semibold hover:bg-red-600/50 transition-colors' : 'px-3 w-full py-2 text-sm bg-blue-600 rounded-full font-semibold hover:bg-blue-600/50 transition-colors'">
+        <button @click="send()" :class="wrongNetwork ? 'px-3 w-full py-2 text-sm bg-red-600 rounded-full font-semibold hover:bg-red-600/50 transition-colors' : 'px-3 w-full py-2 text-sm bg-blue-600 rounded-full font-semibold hover:bg-blue-600/50 transition-colors'">
           {{ isConnect ? wrongNetwork ? 'Wrong Network' : isApprove ? 'Bridge' : 'Approve' : 'Connect Wallet' }}
         </button>
       </div>
@@ -74,8 +74,9 @@
     </div>
 
     <Modal v-if="openModal" :listModal="listModal" :identifier="identifierModal" @closeModal="selectList($event)" />
-    <!-- <ModalError /> -->
-    <Loader />
+    <ModalError v-if="openAlert" :title="titleAlert" :description="descAlert" @closeModal="openAlert = false" />
+    <Loader v-if="isLoading" />
+    <ModalTx v-if="openTx" :link="linkExplorer" @closeModal="openTx = false" />
   </div>
 </template>
 
@@ -89,9 +90,11 @@ export default {
   data(){
     const polygonTokens = require('../config/polygon-token-list.json');
     const bscTokens = require('../config/bsc-token-list.json');
+    const moonBeamTokens = require('../config/moonbeam-token-list.json');
     const listTokens = {
       'Binance' : bscTokens.tokens,
-      'Polygon' : polygonTokens.tokens
+      'Polygon' : polygonTokens.tokens,
+      'Moonbeam' : moonBeamTokens.tokens
     }
     const fromChain = listChains.find((elem) => elem.name === 'Binance')
     const toChain = listChains.find((elem) => elem.name === 'Polygon')
@@ -114,7 +117,13 @@ export default {
       balance: 0,
       isApprove: false,
       amount: 0,
-      amountOut: 0
+      amountOut: 0,
+      openAlert: false,
+      isLoading: false,
+      titleAlert: '',
+      descAlert: '',
+      openTx: false,
+      linkExplorer: ''
     }
   },
   mounted(){
@@ -144,9 +153,43 @@ export default {
   watch: {
     fromChain(){
       this.fromToken = this.listTokens[this.fromChain.name][0]
+      if(this.fromChain.name === this.toChain.name) {
+        for(let i in this.listChains) {
+          if(this.listChains[i].name !== this.fromChain.name) {
+            this.toChain = {
+              logoURI: this.listChains[i].logoURI, 
+              name: this.listChains[i].name, 
+              symbol: this.listChains[i].tokenSymbol, 
+              address: this.listChains[i].weth, 
+              axlUSDC: this.listChains[i].axlUSDC, 
+              usdc: this.listChains[i].usdc,
+              weth: this.listChains[i].weth, 
+              decimals: 18,
+              explorer: this.listChains[i].explorer
+            }
+          }
+        }
+      }
     },
     toChain(){
       this.toToken = this.listTokens[this.toChain.name][0]
+       if(this.fromChain.name === this.toChain.name) {
+        for(let i in this.listChains) {
+          if(this.listChains[i].name !== this.fromChain.name) {
+            this.fromChain = {
+              logoURI: this.listChains[i].logoURI, 
+              name: this.listChains[i].name, 
+              symbol: this.listChains[i].tokenSymbol, 
+              address: this.listChains[i].weth, 
+              axlUSDC: this.listChains[i].axlUSDC, 
+              usdc: this.listChains[i].usdc,
+              weth: this.listChains[i].weth, 
+              decimals: 18,
+              explorer: this.listChains[i].explorer
+            }
+          }
+        }
+      }
     },
     fromToken(){
       this.connectWallet()
@@ -160,7 +203,7 @@ export default {
     },
     async amount(){
       const d = await getQuote(this.fromChain, this.toChain, this.fromToken, this.toToken, utils.parseUnits(parseFloat(this.amount === '' ? '0' : this.amount).toString(), this.fromToken.decimals));
-      this.amountOut = utils.formatUnits(d, this.toToken.decimals)
+      this.amountOut = utils.formatUnits(BigNumber.from(d).sub(BigNumber.from(d).mul(5).div(100)), this.toToken.decimals)
     }
 
   },
@@ -173,13 +216,13 @@ export default {
       if(data === 'fromChain') {
         this.identifierModal = {postfix: 'chain', prefix: 'from'}
         this.listChains.forEach(element => {
-            this.listModal = [...this.listModal, {logoURI: element.logoURI, name: element.name, symbol: element.tokenSymbol, address: element.weth, axlUSDC: element.axlUSDC, usdc: element.usdc, weth: element.weth, decimals: 0}]
+            this.listModal = [...this.listModal, {logoURI: element.logoURI, name: element.name, symbol: element.tokenSymbol, address: element.weth, axlUSDC: element.axlUSDC, usdc: element.usdc, weth: element.weth, decimals: 0, explorer: element.explorer}]
         });
       }
       if(data === 'toChain') {
         this.identifierModal = {postfix: 'chain', prefix: 'to'}
         this.listChains.forEach(element => {
-            this.listModal = [...this.listModal, {logoURI: element.logoURI, name: element.name, symbol: element.tokenSymbol, address: element.weth, axlUSDC: element.axlUSDC, usdc: element.usdc, weth: element.weth, decimals: 0}]
+            this.listModal = [...this.listModal, {logoURI: element.logoURI, name: element.name, symbol: element.tokenSymbol, address: element.weth, axlUSDC: element.axlUSDC, usdc: element.usdc, weth: element.weth, decimals: 0, explorer: element.explorer}]
         });
       }
       if(data === 'fromToken') {
@@ -224,6 +267,7 @@ export default {
         const wallet = await signer.getAddress();
         const chainId = await signer.getChainId();
         this.chainId = chainId
+        console.log(chainId);
         if (getChain(this.fromChain.name).chainId === chainId) {
           this.wrongNetwork = false
           this.balance = this.fromToken.address === '0x' ? await getNativeBalance(wallet, provider) : await getBalance(this.fromToken, signer, wallet, provider)
@@ -242,13 +286,34 @@ export default {
     async send(){
       if(this.isConnect) {
         if(!this.wrongNetwork) {
-          if(this.amount > 0) {
-            if(this.fromChain.name !== this.toChain.name) {
-              if(this.isApprove) {
-
+            if(!this.isApprove) {
+              this.isLoading = true
+              await approveToken(this.fromToken, this.fromChain)
+              this.connectWallet()
+              this.isLoading = false
+            } else {
+              if(this.amount > 0) {
+                this.isLoading = true
+                const r = await sendTx(this.fromToken, this.toToken, this.fromChain, this.toChain, this.amount, this.amountOut, this.amountOut)
+                this.isLoading = false
+                if(r !== 'gagal') {
+                  this.openTx = true
+                  this.linkExplorer = r
+                } else {
+                  this.openAlert = true
+                  this.titleAlert = 'Error'
+                  this.descAlert = 'Oops something went wrong!'
+                }
+              } else {
+                this.titleAlert = "Zero Amount!"
+                this.descAlert = "Please fill the amount of token that you want to send!"
+                this.openAlert = true
               }
             }
-          }
+        } else {
+          this.titleAlert = "Wrong Network"
+          this.descAlert = "Please choose the right network on Metamask!"
+          this.openAlert = true
         }
       } else {
         this.connectWallet()

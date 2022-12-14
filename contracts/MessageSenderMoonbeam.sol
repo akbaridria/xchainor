@@ -80,11 +80,12 @@ contract MessageSender {
         address aUSDC = gateway.tokenAddresses("axlUSDC");
         uint256 amountOut;
         address basePool = 0xB1BC9f56103175193519Ae1540A0A4572b1566F6;
+        address pool = 0xA1ffDc79f998E7fa91bA3A6F098b84c9275B0483;
 
         if(tokenIn == address(weth) ) {
             uint256 amountUniswap = swapOnUniswap(tokenIn, address(usdc), amount - amountGas);
             usdc.approve(address(curvePools), amountUniswap);
-            amountOut = ExchangeToken(address(curvePools), basePool, 0, 0, amountUniswap, getRateExchangeUSDC(address(curvePools),basePool ,0 ,0 , amountUniswap), block.timestamp);
+            amountOut = ExchangeToken(pool, basePool, 0, 0, amountUniswap, 0, block.timestamp);
             IERC20(aUSDC).approve(address(gateway), amountOut);
         } else if (tokenIn == aUSDC) {
             IERC20(tokenIn).transferFrom(msg.sender, address(this), amount);
@@ -93,19 +94,17 @@ contract MessageSender {
         } else if (tokenIn == address(usdc)) {
             IERC20(tokenIn).transferFrom(msg.sender, address(this), amount);
             IERC20(tokenIn).approve(address(curvePools), amount);
-            uint256 estimatedAmount = getRateExchangeUSDC(address(curvePools),basePool ,0 ,0 , amount);
-            amountOut = ExchangeToken(address(curvePools), basePool, 0, 0, amount, estimatedAmount, block.timestamp);
-            IERC20(aUSDC).approve(address(gateway), amountOut);
+            amountOut = ExchangeToken(pool, basePool, 0, 0, amount, 0, block.timestamp);
             IERC20(aUSDC).approve(address(gateway), amountOut);
         } else {
             IERC20(tokenIn).transferFrom(msg.sender, address(this), amount);
             IERC20(tokenIn).approve(address(router), amount);
             uint256 amountUniswap = swapOnUniswap(tokenIn, address(usdc), amount);
             usdc.approve(address(curvePools), amountUniswap);
-            uint256 estimatedAmount = getRateExchangeUSDC(address(curvePools),basePool ,0 ,0 , amountUniswap);
-            amountOut = ExchangeToken(address(curvePools), basePool, 0, 0, amountUniswap, estimatedAmount, block.timestamp);
+            amountOut = ExchangeToken(pool, basePool, 0, 0, amountUniswap, 0, block.timestamp);
             IERC20(aUSDC).approve(address(gateway), amountOut);
         }
+        return amountOut;
     }
 
     function requestTransfersOut(
@@ -119,8 +118,8 @@ contract MessageSender {
     ) external payable {
         
         uint256 amountOut = this.SwapAndTransfer(tokenIn, amount, amountGas);
-        bytes memory payload = abi.encode(setPayloads(msg.sender, tokenOut), minAmount);
-        gasReceiver.payNativeGasForContractCallWithToken{value: amountGas}(address(this), destinationChain, destinationAddress, payload, "axlUSDC", amountOut, msg.sender);            
-        gateway.callContractWithToken(destinationChain, destinationAddress, payload, "axlUSDC", amountOut);
+        // bytes memory payload = abi.encode(setPayloads(msg.sender, tokenOut), minAmount);
+        // gasReceiver.payNativeGasForContractCallWithToken{value: amountGas}(address(this), destinationChain, destinationAddress, payload, "axlUSDC", amountOut, msg.sender);            
+        // gateway.callContractWithToken(destinationChain, destinationAddress, payload, "axlUSDC", amountOut);
     }
 }
